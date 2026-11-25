@@ -96,7 +96,7 @@ function move(c,dt){
  if(c.state<=0){const s=schedule(c);c.activity=s[0];c.target=s[1].clone();c.state=rand(9,18)}
  if(!c.target)return;
  const p=c.object.position,d=c.target.clone().sub(p);d.y=0;
- if(d.length()<1.35){c.target=null;if(c.activity==="Working")c.energy=clamp(c.energy+3,0,100);return}
+ if(d.length()<1.35){c.target=null;c.state=c.activity==="Working"?rand(20,40):rand(6,14);if(c.activity==="Working")c.energy=clamp(c.energy+3,0,100);return}
  d.normalize();const pace=c.activity==="Commute"?1.65:c.activity==="Working"?.55:c.activity==="Meeting friends"?1.05:1;
  p.addScaledVector(d,c.speed*pace*dt);p.y=THREE.MathUtils.lerp(p.y,ground(p.x,p.z).y,.35);c.object.rotation.y=Math.atan2(d.x,d.z);
  const bob=c.activity==="Working"?Math.sin(performance.now()*.012+c.id)*.012:Math.sin(performance.now()*.018+c.id)*.025;c.object.position.y+=bob;
