@@ -27,10 +27,10 @@ const shirts=[0x24384a,0x6b4a36,0x3b5f55,0x5a365a,0x3f3f46,0x8b4c3c,0x36536f,0x6
 const hairColors=[0x171514,0x3a2418,0x4a3425,0x6a4328,0x101112];
 const carsColors=[0x1d2730,0x7a3e32,0x315c5b,0x777052,0x33466b,0x5a5a5a];
 const workZones={
- "Software Developer":[-31,-28],"Teacher":[31,30],"Doctor":[-31,30],"Nurse":[-31,30],"Architect":[0,0],
- "Chef":[31,-28],"Photographer":[32,30],"Barista":[31,-28],"Journalist":[0,0],"Electrician":[-30,-28],
- "Designer":[0,0],"Mechanic":[-30,-28],"Musician":[32,30],"Shop Owner":[31,-28],"Student":[31,30],
- "Fitness Coach":[32,30],"Police Officer":[-31,30],"Delivery Rider":[31,-28],"Accountant":[-31,-28],"Engineer":[-31,-28]
+ "Software Developer":[-31,-20],"Teacher":[30,38],"Doctor":[-30,38],"Nurse":[-30,38],"Architect":[0,-16],
+ "Chef":[29,-18],"Photographer":[50,39],"Barista":[49,-18],"Journalist":[-1,38],"Electrician":[-68,-18],
+ "Designer":[-68,38],"Mechanic":[68,-18],"Musician":[68,38],"Shop Owner":[30,59],"Student":[30,38],
+ "Fitness Coach":[-30,59],"Police Officer":[0,63],"Delivery Rider":[52,59],"Accountant":[-50,59],"Engineer":[-50,-40]
 };
 const rand=(a,b)=>a+Math.random()*(b-a),pick=a=>a[Math.floor(Math.random()*a.length)],clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),money=n=>"₹"+Math.round(n).toLocaleString("en-IN");
 const fmt=m=>String(Math.floor(m/60)%24).padStart(2,"0")+":"+String(Math.floor(m%60)).padStart(2,"0");
@@ -47,12 +47,73 @@ function fallbackCity(){
  for(let i=0;i<36;i++){let x=rand(-82,82),z=rand(-58,58);if(Math.abs(x)<12||Math.abs(z)<10)continue;let w=rand(6,13),d=rand(6,12),h=rand(5,25),b=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),new THREE.MeshStandardMaterial({color:pick([0x53605d,0x5b625f,0x465450,0x6a6257]),roughness:.84}));b.position.set(x,h/2,z);b.castShadow=true;g.add(b)}
  city.add(g);mapRoot=g;cityFloor=0;cityRadius=88
 }
-async function loadCity(){
- loadingText.textContent="Loading city map…";
- try{const g=await new GLTFLoader().loadAsync("./assets/apocalyptic_city.glb"),b=bounds(g.scene),scale=180/Math.max(b.size.x,b.size.z);g.scene.scale.setScalar(scale);g.scene.position.sub(b.center.multiplyScalar(scale));g.scene.position.y-=b.min.y*scale;g.scene.traverse(o=>{if(o.isMesh)o.receiveShadow=true});city.add(g.scene);mapRoot=g.scene;const f=bounds(g.scene);cityFloor=f.min.y;cityRadius=Math.max(f.size.x,f.size.z)*.48}
- catch(e){console.warn(e);loadingText.textContent="Local city renderer online…";fallbackCity()}
+function labelTexture(text,color="#e8c46a"){
+ const c=document.createElement("canvas");c.width=512;c.height=128;const x=c.getContext("2d");
+ x.fillStyle="#0b1110";x.fillRect(0,0,c.width,c.height);x.strokeStyle=color;x.lineWidth=5;x.strokeRect(5,5,502,118);
+ x.fillStyle=color;x.font="700 34px Arial";x.textAlign="center";x.textBaseline="middle";x.fillText(text.toUpperCase(),256,64);
+ const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;return t
 }
-
+function building(x,z,w,d,h,name,color){
+ const g=new THREE.Group();g.position.set(x,0,z);
+ const mat=new THREE.MeshStandardMaterial({color,roughness:.72,metalness:.05});
+ const b=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat);b.position.y=h/2;b.castShadow=true;b.receiveShadow=true;g.add(b);
+ const roof=new THREE.Mesh(new THREE.BoxGeometry(w+.3,.35,d+.3),new THREE.MeshStandardMaterial({color:0x202a28,roughness:.8}));roof.position.y=h+.18;g.add(roof);
+ for(let yy=3;yy<h-1;yy+=3.2)for(let xx=-w/2+1.4;xx<w/2-1;xx+=2.8){
+   const win=new THREE.Mesh(new THREE.BoxGeometry(1.35,.9,.06),new THREE.MeshStandardMaterial({color:0xb9d6d0,emissive:0x294b45,emissiveIntensity:.45,roughness:.3}));
+   win.position.set(xx,yy,d/2+.035);g.add(win);
+ }
+ const sign=new THREE.Mesh(new THREE.PlaneGeometry(Math.min(w-1,9),1.35),new THREE.MeshBasicMaterial({map:labelTexture(name),transparent:true}));
+ sign.position.set(0,Math.min(h-1.2,4.8),d/2+.08);g.add(sign);
+ const entrance=new THREE.Mesh(new THREE.BoxGeometry(1.5,2.5,.25),new THREE.MeshStandardMaterial({color:0x172120,metalness:.2}));
+ entrance.position.set(0,1.25,d/2+.15);g.add(entrance);
+ g.userData.workplace=name;city.add(g);return new THREE.Vector3(x,0,z+d/2+2)
+}
+function tree(x,z){
+ const g=new THREE.Group();g.position.set(x,0,z);
+ const trunk=new THREE.Mesh(new THREE.CylinderGeometry(.18,.25,1.5,8),new THREE.MeshStandardMaterial({color:0x5a3d2a}));trunk.position.y=.75;g.add(trunk);
+ const crown=new THREE.Mesh(new THREE.SphereGeometry(1.15,10,8),new THREE.MeshStandardMaterial({color:0x3c6b55,roughness:.9}));crown.position.y=2.05;crown.scale.y=1.15;g.add(crown);city.add(g)
+}
+function road(x,z,w,d){
+ const r=new THREE.Mesh(new THREE.BoxGeometry(w,.08,d),new THREE.MeshStandardMaterial({color:0x202726,roughness:.94}));r.position.set(x,.04,z);r.receiveShadow=true;city.add(r);
+}
+function createBeautifulCity(){
+ city.clear();
+ const floor=new THREE.Mesh(new THREE.PlaneGeometry(190,150),new THREE.MeshStandardMaterial({color:0x68726e,roughness:1}));
+ floor.rotation.x=-Math.PI/2;floor.receiveShadow=true;city.add(floor);
+ road(0,0,190,14);road(0,0,14,150);road(0,38,190,9);road(0,-38,190,9);road(52,0,9,150);road(-52,0,9,150);
+ const roadMark=new THREE.MeshBasicMaterial({color:0xe0c878});
+ for(let x=-85;x<85;x+=8){const m=new THREE.Mesh(new THREE.BoxGeometry(4,.02,.14),roadMark);m.position.set(x,.09,0);city.add(m)}
+ for(let z=-68;z<68;z+=8){const m=new THREE.Mesh(new THREE.BoxGeometry(.14,.02,4),roadMark);m.position.set(0,.09,z);city.add(m)}
+ const workplaces=[
+  {job:"Software Developer",name:"NOVA TECH",x:-31,z:-27,w:16,d:12,h:15,c:0x314d52},
+  {job:"Teacher",name:"CITY SCHOOL",x:30,z:28,w:16,d:12,h:9,c:0x6b5b46},
+  {job:"Doctor",name:"LIFE HOSPITAL",x:-30,z:29,w:15,d:13,h:12,c:0x54706c},
+  {job:"Nurse",name:"LIFE HOSPITAL",x:-30,z:29,w:15,d:13,h:12,c:0x54706c},
+  {job:"Architect",name:"FORM STUDIO",x:0,z:-25,w:15,d:11,h:13,c:0x554f62},
+  {job:"Chef",name:"SALT KITCHEN",x:29,z:-27,w:15,d:11,h:8,c:0x75533d},
+  {job:"Photographer",name:"FRAME HOUSE",x:50,z:27,w:12,d:11,h:8,c:0x665b49},
+  {job:"Barista",name:"ROAST CAFE",x:49,z:-27,w:11,d:10,h:7,c:0x5b493d},
+  {job:"Journalist",name:"CITY PRESS",x:-1,z:27,w:13,d:10,h:10,c:0x3f5662},
+  {job:"Electrician",name:"VOLT WORKS",x:-68,z:-27,w:12,d:10,h:8,c:0x5a5d43},
+  {job:"Designer",name:"STUDIO 09",x:-68,z:27,w:12,d:10,h:8,c:0x594d5b},
+  {job:"Mechanic",name:"MOTOR GARAGE",x:68,z:-27,w:14,d:11,h:7,c:0x555a5a},
+  {job:"Musician",name:"SOUND ROOM",x:68,z:27,w:13,d:11,h:8,c:0x55465b},
+  {job:"Shop Owner",name:"MARKET",x:30,z:48,w:18,d:11,h:8,c:0x5b654e},
+  {job:"Student",name:"CITY SCHOOL",x:30,z:28,w:16,d:12,h:9,c:0x6b5b46},
+  {job:"Fitness Coach",name:"PULSE GYM",x:-30,z:48,w:15,d:11,h:9,c:0x4d635b},
+  {job:"Police Officer",name:"POLICE HQ",x:0,z:52,w:15,d:11,h:10,c:0x3c5365},
+  {job:"Delivery Rider",name:"QUICKDROP",x:52,z:48,w:14,d:10,h:7,c:0x66563d},
+  {job:"Accountant",name:"FINANCE HOUSE",x:-50,z:48,w:14,d:10,h:11,c:0x4b5b63},
+  {job:"Engineer",name:"CIVIC LAB",x:-50,z:-48,w:15,d:11,h:11,c:0x4e605b}
+ ];
+ const points={};
+ for(const q of workplaces){if(points[q.job])continue;points[q.job]=building(q.x,q.z,q.w,q.d,q.h,q.name,q.c)}
+ // apartment blocks
+ for(let i=0;i<18;i++){const x=pick([-82,-65,-48,-30,-12,12,30,48,65,82])+rand(-2,2),z=pick([-60,-45,-10,10,45,60])+rand(-2,2);if(Math.abs(x)<20&&Math.abs(z)<20)continue;building(x,z,rand(7,11),rand(7,10),rand(5,9),"RESIDENCES",pick([0x56605d,0x5c665f,0x635d52,0x4e5c63]))}
+ for(let i=0;i<30;i++)tree(rand(-88,88),rand(-68,68));
+ mapRoot=city;cityFloor=0;cityRadius=88;window.workPoints=points;
+}
+async function loadCity(){loadingText.textContent="Building the new city…";createBeautifulCity()}
 function landmark(x,z,name,color){
  const g=new THREE.Group();g.position.copy(ground(x,z));
  const base=new THREE.Mesh(new THREE.CylinderGeometry(3.4,3.8,.45,24),new THREE.MeshStandardMaterial({color:0x222a29}));base.position.y=.25;g.add(base);
@@ -68,6 +129,10 @@ function human(c){
  const shoe=new THREE.MeshStandardMaterial({color:0x121517,roughness:.9});
  const torso=new THREE.Mesh(new THREE.CapsuleGeometry(c.gender==="female"?.22:.25,c.gender==="female"?.50:.62,6,10),shirt);torso.position.y=1.02;torso.castShadow=true;g.add(torso);
  const head=new THREE.Mesh(new THREE.SphereGeometry(.235,16,12),skin);head.position.y=1.78;head.castShadow=true;g.add(head);
+ const faceMat=new THREE.MeshBasicMaterial({color:0x151718});
+ for(const x of [-.082,.082]){const eye=new THREE.Mesh(new THREE.SphereGeometry(.025,8,6),faceMat);eye.position.set(x,1.82,.218);g.add(eye)}
+ const nose=new THREE.Mesh(new THREE.ConeGeometry(.025,.07,6),skin);nose.rotation.x=Math.PI/2;nose.position.set(0,1.765,.238);g.add(nose);
+ const mouth=new THREE.Mesh(new THREE.BoxGeometry(.075,.018,.012),faceMat);mouth.position.set(0,1.70,.224);g.add(mouth);
  if(c.gender==="female"){const hair=new THREE.Mesh(new THREE.SphereGeometry(.255,16,12),new THREE.MeshStandardMaterial({color:hairColors[c.id%hairColors.length]}));hair.scale.set(1,1.12,.92);hair.position.set(0,1.86,-.035);hair.castShadow=true;g.add(hair);const pony=new THREE.Mesh(new THREE.SphereGeometry(.12,10,8),hair.material);pony.position.set(0,.03,-.23);pony.position.y=1.75;g.add(pony)}
  else {const hair=new THREE.Mesh(new THREE.SphereGeometry(.24,16,8),new THREE.MeshStandardMaterial({color:hairColors[c.id%hairColors.length]}));hair.scale.set(1,.48,.95);hair.position.set(0,1.95,-.02);g.add(hair)}
  const legGap=c.gender==="female"?.09:.11;for(const x of [-legGap,legGap]){const l=new THREE.Mesh(new THREE.CapsuleGeometry(.072,.56,5,8),pants);l.position.set(x,.46,0);l.castShadow=true;g.add(l);const sh=new THREE.Mesh(new THREE.BoxGeometry(.23,.09,.38),shoe);sh.position.set(x,.11,.05);g.add(sh)}
@@ -82,7 +147,7 @@ function human(c){
  if(c.job==="Mechanic"){const tool=new THREE.Mesh(new THREE.BoxGeometry(.08,.42,.08),new THREE.MeshStandardMaterial({color:0x9ca3a0,metalness:.7}));tool.position.set(.38,.92,.04);tool.rotation.z=-.3;g.add(tool)}
  const ring=new THREE.Mesh(new THREE.RingGeometry(.34,.43,20),new THREE.MeshBasicMaterial({color:0xe8c46a,transparent:true,opacity:.72,side:THREE.DoubleSide}));ring.rotation.x=-Math.PI/2;ring.position.y=.025;ring.visible=false;g.add(ring);c.ring=ring;g.userData.citizen=c;return g
 }
-function workPoint(job){const z=workZones[job]||[0,0];return ground(z[0]+rand(-7,7),z[1]+rand(-7,7))}
+function workPoint(job){const z=workZones[job]||[0,0];return new THREE.Vector3(z[0]+rand(-2,2),0,z[1]+rand(-2,2))}
 function makeCitizen(i){
  const gender=Math.random()<.5?"male":"female",age=Math.floor(rand(18,66));
  let job=pick(jobs);if(age<23)job=Math.random()<.65?"Student":pick(["Barista","Delivery Rider","Designer","Photographer","Fitness Coach"]);
@@ -96,7 +161,7 @@ function move(c,dt){
  if(c.state<=0){const s=schedule(c);c.activity=s[0];c.target=s[1].clone();c.state=rand(9,18)}
  if(!c.target)return;
  const p=c.object.position,d=c.target.clone().sub(p);d.y=0;
- if(d.length()<1.35){c.target=null;c.state=c.activity==="Working"?rand(20,40):rand(6,14);if(c.activity==="Working")c.energy=clamp(c.energy+3,0,100);return}
+ if(d.length()<1.35){c.target=null;c.state=c.activity==="Working"?rand(20,40):rand(6,14);if(c.activity==="Working"){c.energy=clamp(c.energy+3,0,100);if(Math.random()<.03)feed("<span class='feed-name'>WORK</span> "+c.name+" is working at "+c.job+".")}return}
  d.normalize();const pace=c.activity==="Commute"?1.65:c.activity==="Working"?.55:c.activity==="Meeting friends"?1.05:1;
  p.addScaledVector(d,c.speed*pace*dt);p.y=THREE.MathUtils.lerp(p.y,ground(p.x,p.z).y,.35);c.object.rotation.y=Math.atan2(d.x,d.z);
  const bob=c.activity==="Working"?Math.sin(performance.now()*.012+c.id)*.012:Math.sin(performance.now()*.018+c.id)*.025;c.object.position.y+=bob;
