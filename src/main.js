@@ -38,7 +38,7 @@ const feed=m=>{const f=$("#feed"),r=document.createElement("div");r.className="f
 
 function bounds(g){const b=new THREE.Box3().setFromObject(g);return{min:b.min.clone(),size:b.getSize(new THREE.Vector3()),center:b.getCenter(new THREE.Vector3())}}
 function ground(x,z){downRay.set(new THREE.Vector3(x,cityFloor+150,z),new THREE.Vector3(0,-1,0));const h=downRay.intersectObject(mapRoot||city,true)[0];return h?h.point.clone():new THREE.Vector3(x,cityFloor,z)}
-function randomPoint(m=.1){for(let i=0;i<50;i++){const a=rand(0,Math.PI*2),r=Math.sqrt(Math.random())*cityRadius*(1-m),p=ground(Math.cos(a)*r,Math.sin(a)*r);if(Number.isFinite(p.y))return p}return new THREE.Vector3(0,cityFloor,0)}
+function randomPoint(m=.1){const a=rand(0,Math.PI*2),r=Math.sqrt(Math.random())*cityRadius*(1-m);return new THREE.Vector3(Math.cos(a)*r,0,Math.sin(a)*r)}
 
 function fallbackCity(){
  const g=new THREE.Group(),floor=new THREE.Mesh(new THREE.PlaneGeometry(210,150),new THREE.MeshStandardMaterial({color:0x4a504e,roughness:.96}));floor.rotation.x=-Math.PI/2;floor.receiveShadow=true;g.add(floor);
@@ -196,7 +196,7 @@ function move(c,dt){
  const p=c.object.position,d=c.target.clone().sub(p);d.y=0;
  if(d.length()<1.35){c.target=null;c.state=c.activity==="Working"?rand(20,40):rand(6,14);if(c.activity==="Working"){c.energy=clamp(c.energy+3,0,100);if(Math.random()<.03)feed("<span class='feed-name'>WORK</span> "+c.name+" is working at "+c.job+".")}animateCitizen(c,dt);return}
  d.normalize();const pace=c.activity==="Commute"?1.65:c.activity==="Working"?.55:c.activity==="Meeting friends"?1.05:1;
- p.addScaledVector(d,c.speed*pace*dt);p.y=THREE.MathUtils.lerp(p.y,ground(p.x,p.z).y,.35);c.object.rotation.y=Math.atan2(d.x,d.z);
+ p.addScaledVector(d,c.speed*pace*dt);p.y=0.12;c.object.rotation.y=Math.atan2(d.x,d.z);
  const bob=c.activity==="Working"?Math.sin(performance.now()*.012+c.id)*.012:Math.sin(performance.now()*.018+c.id)*.025;c.object.position.y+=bob;
  c.energy=clamp(c.energy-(c.activity==="Working"?.012:.03)*c.speed*dt,8,100);
  animateCitizen(c,dt)
