@@ -1,19 +1,31 @@
-# PlayCity
+# LIFE//100
 
-3D digital town prototype built with Three.js.
+A browser-based 3D population simulation: 100 human citizens living in one city.
 
-## Current build
-- 3D explorable city
-- Third-person character controller
-- WASD movement, Shift sprint, Space jump
-- Interactive districts: Game Zone, Art District, Sports Park, Tech Lab, Library and Food Street
-- Activity join + coins
-- GLB character loader
-- Built-in 3D fallback character
-- Local `.glb` / `.gltf` character upload
+## Included
+- `assets/apocalyptic_city.glb` — supplied city map
+- 100 simulated citizens
+- Real rigged human GLB models with Idle / Walk / Run clips
+- Daily schedules: home, commute, work, outside, meetings
+- Citizen profiles: age, job, money, energy, personality, goals, friends
+- Live city statistics and event feed
+- Click a human to inspect them
+- Follow a human with the camera
+- WASD + Shift free camera
+- Pause/resume simulation
+- Three.js, no build step
 
-## Character asset
-The app automatically tries to load `kids_avatars.glb` from the site root. If that asset is not present in the deployment, use the **Character** button to load the supplied GLB locally; the file stays in the browser.
+## Run locally
+Serve this folder over HTTP, for example:
+```bash
+python -m http.server 5173
+```
+Then open `http://localhost:5173`.
 
-## Run
-Serve the repository as a static site. Three.js is loaded from an ESM CDN, so no build step is required.
+## Human model credits
+The 8 human models are from vinish.dev and are released under CC BY 4.0. Keep this credit:
+> "Human character models by vinish.dev (https://vinish.dev/free-3d-models/people/), CC BY 4.0"
+
+## Map
+The city map is the GLB supplied for this project. Keep it at:
+`assets/apocalyptic_city.glb`
