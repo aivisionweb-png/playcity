@@ -1,102 +1,13 @@
 <!doctype html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1.0">
-  <title>LIFE//100 — 100 Humans. One City.</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="./src/style.css">
-  <script type="importmap">
-  {
-    "imports": {
-      "three": "https://unpkg.com/three@0.181.2/build/three.module.js",
-      "three/addons/": "https://unpkg.com/three@0.181.2/examples/jsm/"
-    }
-  }
-  </script>
-</head>
-<body>
-  <canvas id="world"></canvas>
-
-  <div class="hud">
-    <header class="topbar glass">
-      <div class="brand">
-        <div class="brand-mark">100</div>
-        <div>
-          <div class="brand-title">LIFE<span>//</span>100</div>
-          <div class="brand-sub">ONE CITY · ONE HUNDRED LIVES</div>
-        </div>
-      </div>
-      <div class="top-stats">
-        <div class="stat"><span class="label">CITIZENS</span><strong id="population">100</strong></div>
-        <div class="stat"><span class="label">DAY</span><strong id="day">01</strong></div>
-        <div class="stat clock-stat"><span class="label">CITY TIME</span><strong id="cityTime">08:00</strong></div>
-        <button id="pauseBtn" class="icon-btn" title="Pause simulation">Ⅱ</button>
-      </div>
-    </header>
-
-    <aside class="left-stack">
-      <section class="glass intro-card">
-        <div class="eyebrow">SIMULATION ONLINE</div>
-        <h1>Watch a city<br><span>become alive.</span></h1>
-        <p>100 autonomous citizens. Jobs, money, routines, friendships, arguments and random decisions — all running at once.</p>
-        <div class="controls">
-          <span><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> MOVE</span>
-          <span><kbd>SHIFT</kbd> SPRINT</span>
-          <span><kbd>DRAG</kbd> LOOK</span>
-        </div>
-      </section>
-
-      <section class="glass pulse-card">
-        <div class="section-head"><span>CITY PULSE</span><span id="activityCount">0 active</span></div>
-        <div class="pulse-grid">
-          <div><span>WORKING</span><strong id="workingCount">0</strong></div>
-          <div><span>RESTING</span><strong id="restingCount">0</strong></div>
-          <div><span>OUTSIDE</span><strong id="outsideCount">0</strong></div>
-          <div><span>MEETING</span><strong id="meetingCount">0</strong></div>
-        </div>
-      </section>
-    </aside>
-
-    <aside class="glass citizen-panel" id="citizenPanel">
-      <div class="panel-top">
-        <div>
-          <div class="eyebrow">CITIZEN PROFILE</div>
-          <h2 id="citizenName">Select someone</h2>
-        </div>
-        <button id="closeCitizen" class="close-btn">×</button>
-      </div>
-      <div class="citizen-role" id="citizenRole">Click a human in the city.</div>
-      <div class="mini-grid">
-        <div><span>AGE</span><strong id="citizenAge">—</strong></div>
-        <div><span>MONEY</span><strong id="citizenMoney">—</strong></div>
-        <div><span>ENERGY</span><strong id="citizenEnergy">—</strong></div>
-        <div><span>FRIENDS</span><strong id="citizenFriends">—</strong></div>
-      </div>
-      <div class="profile-line"><span>PERSONALITY</span><strong id="citizenPersonality">—</strong></div>
-      <div class="profile-line"><span>NOW</span><strong id="citizenActivity">—</strong></div>
-      <div class="profile-line"><span>GOAL</span><strong id="citizenGoal">—</strong></div>
-      <button id="followBtn" class="primary">FOLLOW THIS PERSON</button>
-    </aside>
-
-    <div class="glass event-feed">
-      <div class="section-head"><span>LIVE FEED</span><span class="live-dot"></span></div>
-      <div id="feed"></div>
-    </div>
-
-    <div class="hint" id="hint">Click any citizen to inspect their life.</div>
-
-    <div class="loading glass" id="loading">
-      <div class="loader-ring"></div>
-      <div>
-        <strong>Building the city</strong>
-        <span id="loadingText">Loading map…</span>
-      </div>
-    </div>
-  </div>
-
-  <script type="module" src="./src/main.js"></script>
-</body>
-</html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>LIFE//100 — 100 Humans. One City.</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet"><link rel="stylesheet" href="./src/style.css">
+<script type="importmap">{"imports":{"three":"https://unpkg.com/three@0.181.2/build/three.module.js","three/addons/":"https://unpkg.com/three@0.181.2/examples/jsm/"}}</script></head>
+<body><canvas id="world"></canvas><div class="hud">
+<header class="topbar glass"><div class="brand"><div class="brand-mark">100</div><div><div class="brand-title">LIFE<span>//</span>100</div><div class="brand-sub">ONE CITY · ONE HUNDRED LIVES</div></div></div>
+<div class="top-stats"><div class="stat"><span>ALIVE</span><strong id="population">100</strong></div><div class="stat"><span>DAY</span><strong id="day">01</strong></div><div class="stat clock"><span>CITY TIME</span><strong id="cityTime">08:00</strong></div><div class="speed"><button data-speed="1" class="active">1×</button><button data-speed="4">4×</button><button data-speed="12">12×</button></div><button id="pauseBtn" class="icon-btn">Ⅱ</button></div></header>
+<aside class="left-stack"><section class="glass card intro"><div class="eyebrow">AUTONOMOUS CITY SIM</div><h1>Watch a city<br><b>make its own story.</b></h1><p>100 people. Relationships, money, jobs, cars, crime, police, elections, disasters, births and deaths.</p><div class="controls"><span><kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> MOVE</span><span><kbd>SHIFT</kbd> SPRINT</span><span><kbd>DRAG</kbd> LOOK</span></div></section>
+<section class="glass card"><div class="section-head"><span>CITY PULSE</span><span id="activityCount">0 active</span></div><div class="grid"><div><small>WORKING</small><strong id="workingCount">0</strong></div><div><small>RESTING</small><strong id="restingCount">0</strong></div><div><small>OUTSIDE</small><strong id="outsideCount">0</strong></div><div><small>MEETING</small><strong id="meetingCount">0</strong></div></div><div class="row"><span>LIVE ECONOMY</span><b id="economyCount">₹0</b></div><div class="row"><span>OPEN REPORTS</span><b id="crimeCount">0</b></div></section></aside>
+<aside class="glass citizen" id="citizenPanel"><div class="panel-head"><div><div class="eyebrow">CITIZEN PROFILE</div><h2 id="citizenName">Select someone</h2></div><button id="closeCitizen" class="close">×</button></div><div class="role" id="citizenRole">Click a human in the city.</div><div class="mini"><div><small>AGE</small><strong id="citizenAge">—</strong></div><div><small>MONEY</small><strong id="citizenMoney">—</strong></div><div><small>ENERGY</small><strong id="citizenEnergy">—</strong></div><div><small>FRIENDS</small><strong id="citizenFriends">—</strong></div></div><div class="line"><span>PERSONALITY</span><b id="citizenPersonality">—</b></div><div class="line"><span>NOW</span><b id="citizenActivity">—</b></div><div class="line"><span>GOAL</span><b id="citizenGoal">—</b></div><div class="line"><span>STATUS</span><b id="citizenExtra">—</b></div><button id="followBtn" class="primary">FOLLOW THIS PERSON</button></aside>
+<div class="glass feed"><div class="section-head"><span>LIVE FEED</span><i></i></div><div id="feed"></div></div><div class="hint">CLICK PEOPLE · FOLLOW THEM · CHANGE SIM SPEED</div>
+<div class="loading glass" id="loading"><div class="loader-ring"></div><div><strong>Building the city</strong><span id="loadingText">Loading map…</span></div></div>
+</div><script type="module" src="./src/main.js"></script></body></html>
