@@ -145,7 +145,15 @@ function human(c){
  if(c.job==="Musician"){const guitar=new THREE.Mesh(new THREE.SphereGeometry(.15,10,8),new THREE.MeshStandardMaterial({color:0x8c5730}));g.add(guitar);guitar.position.set(.28,.92,.08)}
  if(c.job==="Student"){const bag=new THREE.Mesh(new THREE.BoxGeometry(.36,.45,.16),new THREE.MeshStandardMaterial({color:0x3d6172}));bag.position.set(0,1.05,-.22);g.add(bag)}
  if(c.job==="Mechanic"){const tool=new THREE.Mesh(new THREE.BoxGeometry(.08,.42,.08),new THREE.MeshStandardMaterial({color:0x9ca3a0,metalness:.7}));tool.position.set(.38,.92,.04);tool.rotation.z=-.3;g.add(tool)}
- const ring=new THREE.Mesh(new THREE.RingGeometry(.34,.43,20),new THREE.MeshBasicMaterial({color:0xe8c46a,transparent:true,opacity:.72,side:THREE.DoubleSide}));ring.rotation.x=-Math.PI/2;ring.position.y=.025;ring.visible=false;g.add(ring);c.ring=ring;g.userData.citizen=c;return g
+ const ring=new THREE.Mesh(new THREE.RingGeometry(.34,.43,20),new THREE.MeshBasicMaterial({color:0xe8c46a,transparent:true,opacity:.72,side:THREE.DoubleSide}));ring.rotation.x=-Math.PI/2;ring.position.y=.025;ring.visible=false;g.add(ring);
+ c.parts={torso,head,leftLeg:g.children[g.children.length-1],rightLeg:g.children[g.children.length-1],leftArm:null,rightArm:null};
+ // Identify limbs by their geometry order so procedural animation can drive them.
+ const limbs=g.children.filter(o=>o.isMesh&&o!==ring);
+ const armMeshes=limbs.filter(o=>o.position.y>0.8&&Math.abs(o.position.x)>.25);
+ const legMeshes=limbs.filter(o=>o.position.y<.7&&Math.abs(o.position.x)<.2);
+ c.parts.leftArm=armMeshes[0];c.parts.rightArm=armMeshes[1];c.parts.leftLeg=legMeshes[0];c.parts.rightLeg=legMeshes[1];
+ c.parts.baseY=0;c.parts.phase=Math.random()*Math.PI*2;
+ c.ring=ring;g.userData.citizen=c;return g
 }
 function workPoint(job){const z=workZones[job]||[0,0];return new THREE.Vector3(z[0]+rand(-2,2),0,z[1]+rand(-2,2))}
 function makeCitizen(i){
@@ -155,17 +163,43 @@ function makeCitizen(i){
  c.object=human(c);c.object.position.copy(c.home);c.object.scale.setScalar(rand(.94,1.05));city.add(c.object);citizens.push(c)
 }
 function schedule(c){const h=simMinutes/60;if(h<7.5)return["Home",c.home];if(h<9)return["Commute",c.work];if(h<17)return["Working",c.work];if(h<19)return["Commute",c.leisure];if(h<22)return[Math.random()<.52?"Meeting friends":"Outside",c.leisure];return["Home",c.home]}
+function animateCitizen(c,dt){
+ if(!c.object||!c.parts)return;
+ const p=c.parts,t=performance.now()*.001+p.phase;
+ const moving=!!c.target&&c.object.position.distanceTo(c.target)>1.4;
+ const walking=moving&&(c.activity==="Commute"||c.activity==="Outside"||c.activity==="Meeting friends");
+ const work=c.activity==="Working";
+ const talk=c.activity==="Meeting friends";
+ const speed=walking?Math.sin(t*9):Math.sin(t*2.5);
+ if(p.leftLeg&&p.rightLeg){p.leftLeg.rotation.x=walking?speed*.45:0;p.rightLeg.rotation.x=walking?-speed*.45:0}
+ if(p.leftArm&&p.rightArm){
+   p.leftArm.rotation.x=walking?-speed*.3:work?Math.sin(t*3)*.08:talk?Math.sin(t*2)*.22:0;
+   p.rightArm.rotation.x=walking?speed*.3:work?-Math.sin(t*3)*.08:talk?-Math.sin(t*2)*.22:0;
+   if(c.job==="Chef"&&work)p.rightArm.rotation.x=Math.sin(t*4)*.38;
+   if(c.job==="Mechanic"&&work)p.leftArm.rotation.x=Math.sin(t*4)*.35;
+   if(c.job==="Musician"&&work){p.leftArm.rotation.x=Math.sin(t*6)*.28;p.rightArm.rotation.x=Math.cos(t*6)*.28}
+ }
+ if(p.torso){
+   p.torso.rotation.z=walking?Math.sin(t*9)*.035:0;
+   p.torso.position.y=1.02+(work?Math.abs(Math.sin(t*2.2))*.018:0);
+ }
+ if(p.head){
+   p.head.rotation.y=talk?Math.sin(t*1.7)*.18:Math.sin(t*.7)*.025;
+   p.head.rotation.z=walking?Math.sin(t*9)*.018:0;
+ }
+}
 function move(c,dt){
  if(!c.alive)return;
  c.state-=dt;
  if(c.state<=0){const s=schedule(c);c.activity=s[0];c.target=s[1].clone();c.state=rand(9,18)}
- if(!c.target)return;
+ if(!c.target){animateCitizen(c,dt);return}
  const p=c.object.position,d=c.target.clone().sub(p);d.y=0;
- if(d.length()<1.35){c.target=null;c.state=c.activity==="Working"?rand(20,40):rand(6,14);if(c.activity==="Working"){c.energy=clamp(c.energy+3,0,100);if(Math.random()<.03)feed("<span class='feed-name'>WORK</span> "+c.name+" is working at "+c.job+".")}return}
+ if(d.length()<1.35){c.target=null;c.state=c.activity==="Working"?rand(20,40):rand(6,14);if(c.activity==="Working"){c.energy=clamp(c.energy+3,0,100);if(Math.random()<.03)feed("<span class='feed-name'>WORK</span> "+c.name+" is working at "+c.job+".")}animateCitizen(c,dt);return}
  d.normalize();const pace=c.activity==="Commute"?1.65:c.activity==="Working"?.55:c.activity==="Meeting friends"?1.05:1;
  p.addScaledVector(d,c.speed*pace*dt);p.y=THREE.MathUtils.lerp(p.y,ground(p.x,p.z).y,.35);c.object.rotation.y=Math.atan2(d.x,d.z);
  const bob=c.activity==="Working"?Math.sin(performance.now()*.012+c.id)*.012:Math.sin(performance.now()*.018+c.id)*.025;c.object.position.y+=bob;
- c.energy=clamp(c.energy-(c.activity==="Working"?.012:.03)*c.speed*dt,8,100)
+ c.energy=clamp(c.energy-(c.activity==="Working"?.012:.03)*c.speed*dt,8,100);
+ animateCitizen(c,dt)
 }
 
 function car(){
