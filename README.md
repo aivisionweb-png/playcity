@@ -1,31 +1,31 @@
 # LIFE//100
 
-A browser-based 3D population simulation: 100 human citizens living in one city.
+A 3D autonomous-city simulation built around the supplied apocalyptic city map.
 
-## Included
-- `assets/apocalyptic_city.glb` — supplied city map
-- 100 simulated citizens
-- Real rigged human GLB models with Idle / Walk / Run clips
-- Daily schedules: home, commute, work, outside, meetings
-- Citizen profiles: age, job, money, energy, personality, goals, friends
-- Live city statistics and event feed
-- Click a human to inspect them
-- Follow a human with the camera
-- WASD + Shift free camera
-- Pause/resume simulation
-- Three.js, no build step
+## Simulation
+- 100 citizens with names, ages, jobs, personalities, money, energy, health, happiness and goals
+- Daily routines: home, commute, work, leisure and social time
+- Friendships, gossip, partners and social encounters
+- Economy with salaries, spending and city wealth
+- Job changes and purchases
+- Cars moving through the city
+- Police patrols, crime reports and arrests
+- Births and deaths
+- Weekly simulated elections
+- Random disasters: blackout, heatwave, storm and market crash
+- Pause plus 1x / 4x / 12x simulation speed
+- Click a citizen to inspect them and follow them with the camera
+- WASD + Shift camera controls
 
-## Run locally
-Serve this folder over HTTP, for example:
+## Map
+The project expects the supplied map at `assets/apocalyptic_city.glb`. If the GLB is unavailable, a local fallback city is generated automatically.
+
+## Run
 ```bash
 python -m http.server 5173
 ```
-Then open `http://localhost:5173`.
 
-## Human model credits
-The 8 human models are from vinish.dev and are released under CC BY 4.0. Keep this credit:
-> "Human character models by vinish.dev (https://vinish.dev/free-3d-models/people/), CC BY 4.0"
+Open `http://localhost:5173`.
 
-## Map
-The city map is the GLB supplied for this project. Keep it at:
-`assets/apocalyptic_city.glb`
+## Character note
+The current build uses a lightweight built-in 3D human crowd so Vercel does not get stuck when external GLB hosts fail or block browser requests. This guarantees that all 100 simulated citizens appear and the simulation starts immediately.
